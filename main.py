@@ -2,20 +2,34 @@
 
 import menu
 from opts import get_device
+import paho.mqtt.client as mqtt
+
+def on_connect(client, userdata, flags, rc):
+    print("Connected with result code "+str(rc))
+
+client= mqtt.Client("rpi_zero_1")
+client.on_connect = on_connect
+client.username_pw_set("baniol", password="szapo321")
+client.connect("192.168.1.45")
+client.loop_start()
 
 def test(val):
     print("executing ", val)
+
+def sendMessage(topic, val):
+	print("sending ", topic, val)
+	client.publish(topic, payload=val)
 
 wentylator = {
     'name': 'wentylator',
     'items': [
         {
             'name': 'on',
-            'action': lambda: test('on')
+            'action': lambda: sendMessage('fan', 1)
         },
         {
             'name': 'off',
-            'action': lambda: test('off')
+            'action': lambda: sendMessage('fan', 0)
         }
     ]
 }
