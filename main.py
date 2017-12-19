@@ -7,19 +7,18 @@ import paho.mqtt.client as mqtt
 def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
 
+# TODO: to config
 client= mqtt.Client("rpi_zero_1")
 client.on_connect = on_connect
 client.username_pw_set("baniol", password="szapo321")
 client.connect("192.168.1.45")
 client.loop_start()
 
-def test(val):
-    print("executing ", val)
-
 def sendMessage(topic, val):
 	print("sending ", topic, val)
 	client.publish(topic, payload=val)
 
+# TODO: menu definitions to a separate file
 wentylator = {
     'name': 'wentylator',
     'items': [
@@ -37,12 +36,20 @@ radio = {
     'name': 'radio',
     'items': [
         {
-            'name': 'RFM',
-            'action': lambda: test('RMF')
+            'name': 'Stop radio',
+            'action': lambda: sendMessage('radio', 'stop')
         },
         {
-            'name': 'Melo',
-            'action': lambda: test('Melo')
+            'name': 'Trojka',
+            'action': lambda: sendMessage('radio', 'Trojka')
+        },
+        {
+            'name': 'RMF Classic',
+            'action': lambda: sendMessage('radio', 'RMF Classic')
+        },
+        {
+            'name': 'RMF',
+            'action': lambda: sendMessage('radio', 'RMF')
         }
     ]
 }
@@ -54,6 +61,6 @@ if __name__ == "__main__":
         #global device
         device = get_device()
         m = menu.Menu(device, menu_def)
-        m.loop()
+        m.start()
     except KeyboardInterrupt:
         pass

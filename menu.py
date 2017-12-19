@@ -1,4 +1,6 @@
 import RPi.GPIO as GPIO
+import clock
+import time
 from luma.core.render import canvas
 from PIL import ImageFont
 
@@ -18,11 +20,12 @@ class Menu():
         self.device = dev
         self.menu = menu
         self.current_item = 0
+        self.current_view = 'clock'
         GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.increase, bouncetime=300)
         GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.decrease, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
         GPIO.add_event_detect( 21, GPIO.FALLING, callback=self.go_home, bouncetime=300)
-        #GPIO.add_event_detect( 22, GPIO.FALLING, callback=joystickRight, bouncetime=300)
+        GPIO.add_event_detect( 22, GPIO.FALLING, callback=self.go_home, bouncetime=300)
 
     def increase(self, pin):
         if self.current_item < len(self.menu) - 1:
@@ -33,6 +36,15 @@ class Menu():
         if self.current_item > 0:
             self.current_item -= 1
 
+    def start(self):
+        c = clock.Clock()
+        while True:
+            if self.current_view != 'clock':
+                self.loop()
+                break
+            c.render(self.device)
+            time.sleep(0.01)
+
     def loop(self):
         while True:
             self.draw_menu()
@@ -41,6 +53,9 @@ class Menu():
         if hasattr(self, 'parent_menu'):
             self.menu = self.parent_menu
             del self.parent_menu
+        else:
+            self.current_view = 'clock'
+            self.start()
 
     def draw_menu(self):
         with canvas(self.device, dither=True) as draw:
@@ -66,9 +81,12 @@ class Menu():
         draw.text((left + 5, top + 1), text=message, fill=color)
 
     def execute(self, pin):
-        item = self.menu[self.current_item]
-        if 'action' in item:
-            item['action']()
+        if self.current_view == 'clock':
+            self.current_view = 'menu'
         else:
-            self.parent_menu = self.menu
-            self.menu = item['items']
+            item = self.menu[self.current_item]
+            if 'action' in item:
+                item['action']()
+            else:
+                self.parent_menu = self.menu
+                self.menu = item['items']
