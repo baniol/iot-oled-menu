@@ -17,18 +17,27 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("radio")
 
 def playStation(name):
-	print('Playing ', stations[name])
-        #command = "mplayer %s" (name)
-        #command = "mplayer " + stations[name]
-        #os.system(command)
-        mPID = Popen(["mplayer", stations[name]]).pid
-        print(mPID)
+	if name in stations:
+	    global mPID
+	    stopRadio()
+	    print('Playing ', stations[name])
+	    #command = "mplayer %s" (name)
+	    #command = "mplayer " + stations[name]
+	    #os.system(command)
+	    mPID = Popen(["mplayer", stations[name]]).pid
+	    print(mPID)
+	else:
+		print("Station not found")
 
 def stopRadio():
-    Popen("kill", mPID)
+	global mPID
+     	if mPID != 0:
+	    print("killing ", mPID)
+	    Popen(["kill", str(mPID)])
+	    mPID = 0
 
 def on_message(client, userdata, msg):
-    	#print(msg.topic+" "+str(msg.payload))
+    	print(msg.topic+" "+str(msg.payload))
         if msg.payload == 'stop':
             stopRadio()
         else:
