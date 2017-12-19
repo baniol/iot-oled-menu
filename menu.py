@@ -4,7 +4,7 @@ import time
 from opts import get_device
 from luma.core.render import canvas
 from PIL import ImageFont
-from topmenu import Topmenu
+from topmenu import Topmenu, tp_height
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(20, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -15,21 +15,29 @@ GPIO.setup(23, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(26, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
 item_height = 13
-top_menu_height = 0
+
+# TODO: radio to a separate module
 
 class Menu():
 
-    def __init__(self, dev, menu):
+    def __init__(self, dev, menu, mqtt):
         self.device = dev
         self.menu = menu
         self.current_item = 0
         self.current_view = 'clock'
         self.clock = clock.Clock(self.device)
+        self.current_radio = ""
         GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.menu_item_down, bouncetime=300)
         GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.menu_item_up, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
         GPIO.add_event_detect( 21, GPIO.FALLING, callback=self.go_home, bouncetime=300)
         GPIO.add_event_detect( 22, GPIO.FALLING, callback=self.go_home, bouncetime=300)
+        mqtt.on_message = self.on_mqtt_message
+
+    def on_mqtt_message(self, client, userdate, msg):
+        print("message: ", msg.topic+" : "+str(msg.payload))
+        if msg.topic == 'radio':
+            self.current_radio = msg.payload
 
     def menu_item_down(self, pin):
         if self.current_item < len(self.menu) - 1:
@@ -42,7 +50,8 @@ class Menu():
     def main_loop(self):
         while True:
             if self.current_view == 'clock':
-                self.clock.run()
+                # TODO current_radio from a module, not as param
+                self.clock.run(self.current_radio)
             else:
                 self.draw_menu()
 
@@ -54,20 +63,22 @@ class Menu():
             self.current_view = 'clock'
 
     def draw_menu(self):
-    	top_menu = Topmenu()
+    	top_menu = Topmenu(self.current_radio)
         with canvas(self.device) as draw:
-	    if top_menu_height > 0:
+	    if tp_height > 0:
 	    	top_menu.render(draw)	
             for idx, item in enumerate(self.menu):
                 name = item if isinstance(item, str) else item['name']
                 inv = True if idx == self.current_item else False
-                self.menu_item(draw, name, idx, inv)
+                # TODO: temporary, make `marked` generic !
+                marked = name == self.current_radio
+                self.menu_item(draw, name, idx, inv, marked)
 
-    def menu_item(self, draw, message, idx, inv=False):
+    def menu_item(self, draw, message, idx, inv=False, marked=False):
         left = 2
         right = self.device.width - 2
-        top = (2 + idx * item_height) + top_menu_height
-        bottom = top + item_height + 2 + top_menu_height
+        top = (2 + idx * item_height) + tp_height
+        bottom = top + item_height + 2 + tp_height
 
         if inv:
             color = "black"
@@ -77,7 +88,9 @@ class Menu():
             bg = "black"
 
         draw.rectangle((left, top, right, bottom), fill=bg)
-        draw.text((left + 5, top + 1), text=message, fill=color)
+        pre = "> " if marked else "  "
+        text = pre + message
+        draw.text((left + 5, top + 1), text=text, fill=color)
 
     def execute(self, pin):
         if self.current_view == 'clock':
