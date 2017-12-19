@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import clock
 import time
+from opts import get_device
 from luma.core.render import canvas
 from PIL import ImageFont
 
@@ -21,33 +22,27 @@ class Menu():
         self.menu = menu
         self.current_item = 0
         self.current_view = 'clock'
-        GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.increase, bouncetime=300)
-        GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.decrease, bouncetime=300)
+        self.clock = clock.Clock(self.device)
+        GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.menu_item_down, bouncetime=300)
+        GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.menu_item_up, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
         GPIO.add_event_detect( 21, GPIO.FALLING, callback=self.go_home, bouncetime=300)
         GPIO.add_event_detect( 22, GPIO.FALLING, callback=self.go_home, bouncetime=300)
 
-    def increase(self, pin):
+    def menu_item_down(self, pin):
         if self.current_item < len(self.menu) - 1:
             self.current_item += 1
 
-
-    def decrease(self, pin):
+    def menu_item_up(self, pin):
         if self.current_item > 0:
             self.current_item -= 1
 
-    def start(self):
-        c = clock.Clock()
+    def main_loop(self):
         while True:
-            if self.current_view != 'clock':
-                self.loop()
-                break
-            c.render(self.device)
-            time.sleep(0.01)
-
-    def loop(self):
-        while True:
-            self.draw_menu()
+            if self.current_view == 'clock':
+                self.clock.run()
+            else:
+                self.draw_menu()
 
     def go_home(self, pin):
         if hasattr(self, 'parent_menu'):
@@ -55,10 +50,9 @@ class Menu():
             del self.parent_menu
         else:
             self.current_view = 'clock'
-            self.start()
 
     def draw_menu(self):
-        with canvas(self.device, dither=True) as draw:
+        with canvas(self.device) as draw:
             for idx, item in enumerate(self.menu):
                 name = item if isinstance(item, str) else item['name']
                 inv = True if idx == self.current_item else False

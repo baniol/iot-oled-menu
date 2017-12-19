@@ -40,6 +40,10 @@ radio = {
             'action': lambda: sendMessage('radio', 'stop')
         },
         {
+            'name': 'Chilli Zet',
+            'action': lambda: sendMessage('radio', 'Chilli Zet')
+        },
+        {
             'name': 'Trojka',
             'action': lambda: sendMessage('radio', 'Trojka')
         },
@@ -61,6 +65,6 @@ if __name__ == "__main__":
         #global device
         device = get_device()
         m = menu.Menu(device, menu_def)
-        m.start()
+        m.main_loop()
     except KeyboardInterrupt:
         pass
