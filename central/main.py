@@ -29,7 +29,7 @@ def stopRadio():
 
 def on_message(client, userdata, msg):
     	#print(msg.topic+" "+str(msg.payload))
-        if msg.payload == stop:
+        if msg.payload == 'stop':
             stopRadio()
         else:
 	    playStation(msg.payload)
