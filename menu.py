@@ -4,6 +4,7 @@ import time
 from opts import get_device
 from luma.core.render import canvas
 from PIL import ImageFont
+from topmenu import Topmenu
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(20, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -14,6 +15,7 @@ GPIO.setup(23, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 GPIO.setup(26, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
 item_height = 13
+top_menu_height = 0
 
 class Menu():
 
@@ -52,7 +54,10 @@ class Menu():
             self.current_view = 'clock'
 
     def draw_menu(self):
+    	top_menu = Topmenu()
         with canvas(self.device) as draw:
+	    if top_menu_height > 0:
+	    	top_menu.render(draw)	
             for idx, item in enumerate(self.menu):
                 name = item if isinstance(item, str) else item['name']
                 inv = True if idx == self.current_item else False
@@ -61,8 +66,8 @@ class Menu():
     def menu_item(self, draw, message, idx, inv=False):
         left = 2
         right = self.device.width - 2
-        top = 2 + idx * item_height
-        bottom = top + item_height + 2
+        top = (2 + idx * item_height) + top_menu_height
+        bottom = top + item_height + 2 + top_menu_height
 
         if inv:
             color = "black"
