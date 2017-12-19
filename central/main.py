@@ -8,7 +8,7 @@ mPID = 0
 stations = {
     'RMF Classic': 'http://31.192.216.5:8000/rmf_classic',
     'Trojka': 'http://stream3.polskieradio.pl:8904',
-    'RMF': 'http://195.150.20.7:8000/rmf_fm'
+    'Chilli Zet': 'http://chi-kat-02.cdn.eurozet.pl:8902/'
 }
 
 def on_connect(client, userdata, flags, rc):
@@ -17,22 +17,19 @@ def on_connect(client, userdata, flags, rc):
     client.subscribe("radio")
 
 def playStation(name):
-        stopRadio()
 	print('Playing ', stations[name])
-        global mPID
+        #command = "mplayer %s" (name)
+        #command = "mplayer " + stations[name]
+        #os.system(command)
         mPID = Popen(["mplayer", stations[name]]).pid
         print(mPID)
 
 def stopRadio():
-    global mPID
-    if mPID != 0:
-        print("killing ", mPID)
-        Popen(["kill", str(mPID)])
-        mPID = 0
+    Popen("kill", mPID)
 
 def on_message(client, userdata, msg):
     	#print(msg.topic+" "+str(msg.payload))
-        if msg.payload == 'stop':
+        if msg.payload == stop:
             stopRadio()
         else:
 	    playStation(msg.payload)
