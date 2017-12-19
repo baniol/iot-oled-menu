@@ -22,7 +22,7 @@ class Menu():
         GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.decrease, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
         GPIO.add_event_detect( 21, GPIO.FALLING, callback=self.go_home, bouncetime=300)
-        #GPIO.add_event_detect( 22, GPIO.FALLING, callback=joystickRight, bouncetime=300)
+        GPIO.add_event_detect( 22, GPIO.FALLING, callback=self.go_home, bouncetime=300)
 
     def increase(self, pin):
         if self.current_item < len(self.menu) - 1:

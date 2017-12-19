@@ -37,12 +37,20 @@ radio = {
     'name': 'radio',
     'items': [
         {
-            'name': 'RFM',
-            'action': lambda: test('RMF')
+            'name': 'Stop radio',
+            'action': lambda: sendMessage('radio', 'stop')
         },
         {
-            'name': 'Melo',
-            'action': lambda: test('Melo')
+            'name': 'Trojka',
+            'action': lambda: sendMessage('radio', 'Trojka')
+        },
+        {
+            'name': 'RMF Classic',
+            'action': lambda: sendMessage('radio', 'RMF Classic')
+        },
+        {
+            'name': 'RMF',
+            'action': lambda: sendMessage('radio', 'RMF')
         }
     ]
 }
