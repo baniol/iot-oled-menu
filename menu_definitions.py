@@ -14,11 +14,11 @@ class MenuDefinitions:
             'items': [
                 {
                     'name': 'on',
-                    'action': lambda: self.send_message('fan', 1)
+                    'action': lambda: self.send_message('esp8266/4', 1)
                 },
                 {
                     'name': 'off',
-                    'action': lambda: self.send_message('fan', 0)
+                    'action': lambda: self.send_message('esp8266/4', 0)
                 }
             ]
         }

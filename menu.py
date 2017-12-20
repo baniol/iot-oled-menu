@@ -28,6 +28,7 @@ class Menu():
         self.current_view = 'clock'
         self.clock = clock.Clock(self.device)
         self.current_radio = ""
+        self.fan = ""
         GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.menu_item_down, bouncetime=300)
         GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.menu_item_up, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
@@ -37,8 +38,11 @@ class Menu():
 
     def on_mqtt_message(self, client, userdate, msg):
         print("message: ", msg.topic+" : "+str(msg.payload))
+        # TODO: topic names to constants
         if msg.topic == 'radio':
             self.current_radio = msg.payload
+        if msg.topic == 'esp8266/4':
+            self.fan = msg.payload
 
     def menu_item_down(self, pin):
         if self.current_item < len(self.menu) - 1:
@@ -52,7 +56,7 @@ class Menu():
         while True:
             if self.current_view == 'clock':
                 # TODO current_radio from a module, not as param
-                self.clock.run(self.current_radio)
+                self.clock.run(self.current_radio, self.fan)
             else:
                 self.draw_menu()
 
@@ -64,7 +68,7 @@ class Menu():
             self.current_view = 'clock'
 
     def draw_menu(self):
-    	top_menu = Topmenu(self.current_radio)
+    	top_menu = Topmenu(self.current_radio, self.fan)
         #virtual = viewport(self.device, width=self.device.width, height=160)
         #with canvas(virtual) as draw:
         with canvas(self.device) as draw:

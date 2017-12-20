@@ -9,6 +9,7 @@ def on_connect(client, userdata, flags, rc):
     print("Connected with result code "+str(rc))
     # TODO: check qos
     client.subscribe("radio", 2)
+    client.subscribe("esp8266/4", 2)
 
 # TODO: to config
 client = mqtt.Client("rpi_zero_1", clean_session=False)

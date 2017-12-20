@@ -21,7 +21,7 @@ class Clock:
         now = datetime.datetime.now()
         today_date = now.strftime("%d %b %y")
         today_time = now.strftime("%H:%M:%S")
-    	top_menu = Topmenu(self.current_radio)
+    	top_menu = Topmenu(self.current_radio, self.fan)
         if today_time != self.today_last_time:
             self.today_last_time = today_time
             with canvas(self.device) as draw:
@@ -35,8 +35,9 @@ class Clock:
                 draw.text((5, 15 + tp_height), today_time, font=font, fill="yellow")
 
     # TODO: current_radio from module, not as param
-    def run(self, current_radio):
+    def run(self, current_radio, fan):
         self.current_radio = current_radio
+        self.fan = fan
         self.render()
         time.sleep(0.01)
 
