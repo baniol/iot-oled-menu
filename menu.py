@@ -1,8 +1,11 @@
 import RPi.GPIO as GPIO
 import clock
 import time
+from opts import get_device
 from luma.core.render import canvas
+from luma.core.virtual import viewport
 from PIL import ImageFont
+from topmenu import Topmenu, tp_height
 
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(20, GPIO.IN, pull_up_down = GPIO.PUD_UP)
@@ -14,40 +17,44 @@ GPIO.setup(26, GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
 item_height = 13
 
+# TODO: radio to a separate module
+
 class Menu():
 
-    def __init__(self, dev, menu):
+    def __init__(self, dev, menu, mqtt):
         self.device = dev
         self.menu = menu
         self.current_item = 0
         self.current_view = 'clock'
-        GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.increase, bouncetime=300)
-        GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.decrease, bouncetime=300)
+        self.clock = clock.Clock(self.device)
+        self.current_radio = ""
+        GPIO.add_event_detect( 20, GPIO.FALLING, callback=self.menu_item_down, bouncetime=300)
+        GPIO.add_event_detect( 23, GPIO.FALLING, callback=self.menu_item_up, bouncetime=300)
         GPIO.add_event_detect( 26, GPIO.FALLING, callback=self.execute, bouncetime=300)
         GPIO.add_event_detect( 21, GPIO.FALLING, callback=self.go_home, bouncetime=300)
         GPIO.add_event_detect( 22, GPIO.FALLING, callback=self.go_home, bouncetime=300)
+        mqtt.on_message = self.on_mqtt_message
 
-    def increase(self, pin):
+    def on_mqtt_message(self, client, userdate, msg):
+        print("message: ", msg.topic+" : "+str(msg.payload))
+        if msg.topic == 'radio':
+            self.current_radio = msg.payload
+
+    def menu_item_down(self, pin):
         if self.current_item < len(self.menu) - 1:
             self.current_item += 1
 
-
-    def decrease(self, pin):
+    def menu_item_up(self, pin):
         if self.current_item > 0:
             self.current_item -= 1
 
-    def start(self):
-        c = clock.Clock()
+    def main_loop(self):
         while True:
-            if self.current_view != 'clock':
-                self.loop()
-                break
-            c.render(self.device)
-            time.sleep(0.01)
-
-    def loop(self):
-        while True:
-            self.draw_menu()
+            if self.current_view == 'clock':
+                # TODO current_radio from a module, not as param
+                self.clock.run(self.current_radio)
+            else:
+                self.draw_menu()
 
     def go_home(self, pin):
         if hasattr(self, 'parent_menu'):
@@ -55,20 +62,32 @@ class Menu():
             del self.parent_menu
         else:
             self.current_view = 'clock'
-            self.start()
 
     def draw_menu(self):
-        with canvas(self.device, dither=True) as draw:
+    	top_menu = Topmenu(self.current_radio)
+        #virtual = viewport(self.device, width=self.device.width, height=160)
+        #with canvas(virtual) as draw:
+        with canvas(self.device) as draw:
+	    if tp_height > 0:
+	    	top_menu.render(draw)	
+
+                
             for idx, item in enumerate(self.menu):
+                #if self.current_item >= 3:
+                    #idx = idx - 2
                 name = item if isinstance(item, str) else item['name']
                 inv = True if idx == self.current_item else False
-                self.menu_item(draw, name, idx, inv)
+                # TODO: temporary, make `marked` generic !
+                marked = name == self.current_radio
+                #if self.current_item >= 3:
+                    #virtual.set_position((0, (self.current_item-2)*item_height))
+                self.menu_item(draw, name, idx, inv, marked)
 
-    def menu_item(self, draw, message, idx, inv=False):
+    def menu_item(self, draw, message, idx, inv=False, marked=False):
         left = 2
         right = self.device.width - 2
-        top = 2 + idx * item_height
-        bottom = top + item_height + 2
+        top = (2 + idx * item_height) + tp_height
+        bottom = top + item_height + 2 + tp_height
 
         if inv:
             color = "black"
@@ -78,6 +97,8 @@ class Menu():
             bg = "black"
 
         draw.rectangle((left, top, right, bottom), fill=bg)
+        #pre = "> " if marked else "  "
+        #text = pre + message
         draw.text((left + 5, top + 1), text=message, fill=color)
 
     def execute(self, pin):

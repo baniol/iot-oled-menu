@@ -2,6 +2,11 @@
 
 ```python main.py -i spi -d sh1106```
 
+## Prerequisites
+
+* install ntp (optional)
+* configure local time `sudo dpkg-reconfigure tzdata`
+
 ## Run as process
 
 managing systemd
