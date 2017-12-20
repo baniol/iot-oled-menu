@@ -3,6 +3,7 @@ import clock
 import time
 from opts import get_device
 from luma.core.render import canvas
+from luma.core.virtual import viewport
 from PIL import ImageFont
 from topmenu import Topmenu, tp_height
 
@@ -64,14 +65,22 @@ class Menu():
 
     def draw_menu(self):
     	top_menu = Topmenu(self.current_radio)
+        #virtual = viewport(self.device, width=self.device.width, height=160)
+        #with canvas(virtual) as draw:
         with canvas(self.device) as draw:
 	    if tp_height > 0:
 	    	top_menu.render(draw)	
+
+                
             for idx, item in enumerate(self.menu):
+                #if self.current_item >= 3:
+                    #idx = idx - 2
                 name = item if isinstance(item, str) else item['name']
                 inv = True if idx == self.current_item else False
                 # TODO: temporary, make `marked` generic !
                 marked = name == self.current_radio
+                #if self.current_item >= 3:
+                    #virtual.set_position((0, (self.current_item-2)*item_height))
                 self.menu_item(draw, name, idx, inv, marked)
 
     def menu_item(self, draw, message, idx, inv=False, marked=False):
@@ -88,9 +97,9 @@ class Menu():
             bg = "black"
 
         draw.rectangle((left, top, right, bottom), fill=bg)
-        pre = "> " if marked else "  "
-        text = pre + message
-        draw.text((left + 5, top + 1), text=text, fill=color)
+        #pre = "> " if marked else "  "
+        #text = pre + message
+        draw.text((left + 5, top + 1), text=message, fill=color)
 
     def execute(self, pin):
         if self.current_view == 'clock':
