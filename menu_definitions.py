@@ -34,6 +34,10 @@ class MenuDefinitions:
                     'action': lambda: self.send_message('radio', 'Chilli Zet')
                 },
                 {
+                    'name': 'France Inter',
+                    'action': lambda: self.send_message('radio', 'France Inter')
+                },
+                {
                     'name': 'Trojka',
                     'action': lambda: self.send_message('radio', 'Trojka')
                 },
