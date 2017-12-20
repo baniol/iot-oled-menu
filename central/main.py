@@ -8,7 +8,8 @@ mPID = 0
 stations = {
     'RMF Classic': 'http://31.192.216.5:8000/rmf_classic',
     'Trojka': 'http://stream3.polskieradio.pl:8904',
-    'Chilli Zet': 'http://chi-kat-02.cdn.eurozet.pl:8902/'
+    'Chilli Zet': 'http://chi-kat-02.cdn.eurozet.pl:8902/',
+    'France Inter': 'http://direct.franceinter.fr/live/franceinter-midfi.mp3?ID=f9fbk29m84'
 }
 
 def on_connect(client, userdata, flags, rc):
