@@ -12,6 +12,7 @@
 * configure local time `sudo dpkg-reconfigure tzdata`
 * for RPI headless sound problem (no soundcard) - 
 * http://blog.scphillips.com/posts/2013/01/sound-configuration-on-raspberry-pi-with-alsa/ - cli sound management
+Sound problem - add dtparam=audio=on to /boot/config.txt
 
 ## Run as process
 
@@ -38,4 +39,6 @@ https://www.dexterindustries.com/howto/run-a-program-on-your-raspberry-pi-at-sta
 ## Keypad Matrix
 
 * https://raspberrypi.stackexchange.com/questions/53665/how-to-use-a-4x4-keypad-in-python
+
+
 
