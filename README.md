@@ -2,6 +2,10 @@
 
 ```python main.py -i spi -d sh1106```
 
+## Hardware
+
+Wireing: https://luma-oled.readthedocs.io/en/latest/hardware.html#spi
+
 ## Links
 
 * https://luma-core.readthedocs.io/en/latest/api-documentation.html#module-luma.core.virtual - luma core docs
